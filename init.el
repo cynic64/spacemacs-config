@@ -33,7 +33,13 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(html
+   '(csv
+     python
+     python
+     yaml
+     lua
+     perl5
+     html
      (rust :variables
            rust-backend 'lsp)
      ;; my-theme
@@ -55,9 +61,9 @@ This function should only modify configuration layer settings."
      ;; markdown
      multiple-cursors
      org
-     ;; (shell :variables
-     ;;        shell-default-height 30
-     ;;        shell-default-position 'bottom)
+     (shell :variables
+            shell-default-height 30
+            shell-default-position 'bottom)
      ;; spell-checking
      ;; syntax-checking
      treemacs
@@ -73,7 +79,7 @@ This function should only modify configuration layer settings."
    ;; To use a local version of a package, use the `:location' property:
    ;; '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '(doom-themes subatomic-theme arjen-grey-theme)
+   dotspacemacs-additional-packages '(doom-themes subatomic-theme arjen-grey-theme key-chord)
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -123,11 +129,11 @@ It should only modify the values of Spacemacs settings."
    ;; This variable has no effect if Emacs is launched with the parameter
    ;; `--insecure' which forces the value of this variable to nil.
    ;; (default t)
-   dotspacemacs-elpa-https t
+   dotspacemacs-elpa-https nil
 
    ;; Maximum allowed time in seconds to contact an ELPA repository.
    ;; (default 5)
-   dotspacemacs-elpa-timeout 5
+   dotspacemacs-elpa-timeout 20
 
    ;; Set `gc-cons-threshold' and `gc-cons-percentage' when startup finishes.
    ;; This is an advanced option and should not be changed unless you suspect
@@ -202,11 +208,11 @@ It should only modify the values of Spacemacs settings."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(doom-city-lights
+   dotspacemacs-themes '(doom-dracula
                          ;; snazzy, gruvbox and Iosvkem constantly re-install
                          ;; every startup for some reason
                          ;; doom-snazzy
-                         doom-dracula
+                         doom-city-lights
                          ;; doom-gruvbox
                          doom-molokai
                          doom-sourcerer
@@ -231,8 +237,8 @@ It should only modify the values of Spacemacs settings."
    dotspacemacs-colorize-cursor-according-to-state t
 
    ;; Default font or prioritized list of fonts.
-   dotspacemacs-default-font '("Monospace"
-                               :size 10.0
+   dotspacemacs-default-font '("FuraCode Nerd Font Mono"
+                               :size 14.0
                                :weight normal
                                :width normal)
 
@@ -492,11 +498,22 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
-  (spacemacs/toggle-mode-line-minor-modes-off)
+  ;; (add-hook 'evil-mc-mode-hook (lambda ()
+  ;;           (rust-mode -1)))
+
+  ;; margins
+  (setq-default left-margin-width 2 right-margin-width 2)
+  (set-window-buffer nil (current-buffer))
+
+  (setq lua-indent-level 4)
+
   (setq cargo-process--command-build "build --release")
   (setq cargo-process--command-run "run --release")
 
-  (add-hook 'rust-mode-hook 'linum-mode)
+  ;; shorter avy delay
+  (setq avy-timeout-seconds 0.2)
+
+  ;; (add-hook 'rust-mode-hook 'linum-mode)
   (doom-themes-treemacs-config)
 
   (global-set-key (kbd "M-]") 'evil-window-right)
@@ -506,6 +523,16 @@ before packages are loaded."
   (define-key evil-insert-state-map (kbd "C-j") 'evil-next-line)
   (define-key evil-insert-state-map (kbd "C-k") 'evil-previous-line)
   (define-key evil-insert-state-map (kbd "C-l") 'evil-forward-char)
+
+  (define-key evil-insert-state-map (kbd "C-y") 'yank)
+
+  (key-chord-define evil-normal-state-map "vv" 'recenter)
+  (key-chord-define evil-normal-state-map ";;" (lambda ()
+                                                 (interactive)
+                                                 (comment-line 1)
+                                                 (previous-line)))
+  (setq key-chord-one-key-delay 0.15)
+  (key-chord-mode 1)
 
   ;; TODO: move this to a layer (maybe keybinds in general too)
   (defun open-line-clean ()
@@ -529,6 +556,9 @@ before packages are loaded."
 
   (spacemacs/declare-prefix "o" "custom")
   (spacemacs/set-leader-keys "oh" 'evil-ex-nohighlight)
+  (spacemacs/set-leader-keys "os" 'multi-term)
+  (setq multi-term-program "/usr/bin/zsh")
+  (setq exec-path (append exec-path '("~/.cargo/bin/")))
  )
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -544,8 +574,9 @@ This function is called at the very end of Spacemacs initialization."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("1e9001d2f6ffb095eafd9514b4d5974b720b275143fbc89ea046495a99c940b0" "3fa65d60abd566321f93d1354f91dedae8ab795bb688a421c69e2e0f7fa3c9bc" "427fa665823299f8258d8e27c80a1481edbb8f5463a6fb2665261e9076626710" "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983" "614e5089876ea69b515c50b6d7fa0a37eb7ed50fda224623ec49e1c91a0af6a1" "a16e816774b437acb78beb9916a60ea236cfcd05784227a7d829623f8468c5a2" "8c847a5675ece40017de93045a28ebd9ede7b843469c5dec78988717f943952a" "4e132458143b6bab453e812f03208075189deca7ad5954a4abb27d5afce10a9a" "0fdd9258f9bf92772bf3d7839dee12161a48225f58b91035de33abb5e3a11a73" "cb477d192ee6456dc2eb5ca5a0b7bd16bdb26514be8f8512b937291317c7b166" "4ea0aa360264ff861fb0212abe4161b83ad1d8c8b74d8a04bcd1baf0ebdceeae" "f8c30fa07ba7e8fe884f22b428dae6724955fa61ad84a658c3b0164ae391fb52" "4201f4d3ce08da82c08aca12d9ca2c085bb07c115c096b36f111a34f0cf8d11d" "ab9456aaeab81ba46a815c00930345ada223e1e7c7ab839659b382b52437b9ea" "43c808b039893c885bdeec885b4f7572141bd9392da7f0bd8d8346e02b2ec8da" "2f0cbe053485bccbbbb582acdba7c7c9585ad808ee8ab32f0d727c3d39b42275" "d0c943c37d6f5450c6823103544e06783204342430a36ac20f6beb5c2a48abe3" "b0fd04a1b4b614840073a82a53e88fe2abc3d731462d6fde4e541807825af342" "155a5de9192c2f6d53efcc9c554892a0d87d87f99ad8cc14b330f4f4be204445" "5d84ef8afded2cb54c77d21d6eb40a8a8356e4d490667ecc0de553e64e9f8292" "ef4edbfc3ec509612f3cf82476beddd2aeb3da7bdc3a35726337a0cc838a4ef4" "34c99997eaa73d64b1aaa95caca9f0d64229871c200c5254526d0062f8074693" "e3c87e869f94af65d358aa279945a3daf46f8185f1a5756ca1c90759024593dd" "9c27124b3a653d43b3ffa088cd092c34f3f82296cf0d5d4f719c0c0817e1afa6" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" default))
+   '("f5568ed375abea716d1bdfae0316d1d179f69972eaccd1f331b3e9863d7e174a" "1e9001d2f6ffb095eafd9514b4d5974b720b275143fbc89ea046495a99c940b0" "3fa65d60abd566321f93d1354f91dedae8ab795bb688a421c69e2e0f7fa3c9bc" "427fa665823299f8258d8e27c80a1481edbb8f5463a6fb2665261e9076626710" "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983" "614e5089876ea69b515c50b6d7fa0a37eb7ed50fda224623ec49e1c91a0af6a1" "a16e816774b437acb78beb9916a60ea236cfcd05784227a7d829623f8468c5a2" "8c847a5675ece40017de93045a28ebd9ede7b843469c5dec78988717f943952a" "4e132458143b6bab453e812f03208075189deca7ad5954a4abb27d5afce10a9a" "0fdd9258f9bf92772bf3d7839dee12161a48225f58b91035de33abb5e3a11a73" "cb477d192ee6456dc2eb5ca5a0b7bd16bdb26514be8f8512b937291317c7b166" "4ea0aa360264ff861fb0212abe4161b83ad1d8c8b74d8a04bcd1baf0ebdceeae" "f8c30fa07ba7e8fe884f22b428dae6724955fa61ad84a658c3b0164ae391fb52" "4201f4d3ce08da82c08aca12d9ca2c085bb07c115c096b36f111a34f0cf8d11d" "ab9456aaeab81ba46a815c00930345ada223e1e7c7ab839659b382b52437b9ea" "43c808b039893c885bdeec885b4f7572141bd9392da7f0bd8d8346e02b2ec8da" "2f0cbe053485bccbbbb582acdba7c7c9585ad808ee8ab32f0d727c3d39b42275" "d0c943c37d6f5450c6823103544e06783204342430a36ac20f6beb5c2a48abe3" "b0fd04a1b4b614840073a82a53e88fe2abc3d731462d6fde4e541807825af342" "155a5de9192c2f6d53efcc9c554892a0d87d87f99ad8cc14b330f4f4be204445" "5d84ef8afded2cb54c77d21d6eb40a8a8356e4d490667ecc0de553e64e9f8292" "ef4edbfc3ec509612f3cf82476beddd2aeb3da7bdc3a35726337a0cc838a4ef4" "34c99997eaa73d64b1aaa95caca9f0d64229871c200c5254526d0062f8074693" "e3c87e869f94af65d358aa279945a3daf46f8185f1a5756ca1c90759024593dd" "9c27124b3a653d43b3ffa088cd092c34f3f82296cf0d5d4f719c0c0817e1afa6" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" default))
  '(evil-want-Y-yank-to-eol nil)
+ '(hl-paren-colors '("#B9F" "#B8D" "#B7B" "#B69" "#B57" "#B45" "#B33" "#B11"))
  '(hl-todo-keyword-faces
    '(("TODO" . "#dc752f")
      ("NEXT" . "#dc752f")
@@ -563,12 +594,35 @@ This function is called at the very end of Spacemacs initialization."
      ("XXX" . "#dc752f")
      ("XXXX" . "#dc752f")))
  '(package-selected-packages
-   '(arjen-grey-theme subatomic-theme md4rd web-mode web-beautify tagedit slim-mode scss-mode sass-mode pug-mode prettier-js impatient-mode simple-httpd helm-css-scss haml-mode emmet-mode counsel-css company-web web-completion-data add-node-modules-path selectric-mode orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-mime org-download org-cliplink org-brain htmlize helm-org-rifle gnuplot evil-org evil-snipe smeargle magit-svn magit-gitflow magit-popup helm-gitignore helm-git-grep gitignore-templates gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link evil-magit magit transient git-commit with-editor zones doom-themes yasnippet-snippets helm-company helm-c-yasnippet fuzzy dap-mode bui tree-mode company-statistics company-lsp auto-yasnippet yasnippet ac-ispell auto-complete lsp-ui lsp-treemacs helm-lsp lsp-mode dash-functional toml-mode racer pos-tip helm-gtags ggtags flycheck-rust counsel-gtags counsel swiper ivy company cargo markdown-mode rust-mode ws-butler writeroom-mode visual-fill-column winum volatile-highlights vi-tilde-fringe uuidgen treemacs-projectile treemacs-evil treemacs ht pfuture toc-org symon symbol-overlay string-inflection spaceline-all-the-icons spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode password-generator paradox spinner overseer org-bullets open-junk-file nameless move-text macrostep lorem-ipsum link-hint indent-guide hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-xref helm-themes helm-swoop helm-purpose window-purpose imenu-list helm-projectile projectile helm-mode-manager helm-make helm-flx helm-descbinds helm-ag google-translate golden-ratio flycheck-package package-lint flycheck pkg-info epl flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state iedit evil-goggles evil-exchange evil-escape evil-ediff evil-cleverparens smartparens paredit evil-args evil-anzu anzu eval-sexp-fu elisp-slime-nav editorconfig dumb-jump doom-modeline shrink-path all-the-icons memoize f dash s devdocs define-word column-enforce-mode clean-aindent-mode centered-cursor-mode auto-highlight-symbol auto-compile packed aggressive-indent ace-window ace-link ace-jump-helm-line helm avy helm-core popup which-key use-package pcre2el org-plus-contrib hydra lv font-lock+ evil goto-chg undo-tree dotenv-mode diminish bind-map bind-key async))
+   '(csv-mode spinner evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-snipe evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state iedit evil-exchange evil-ediff evil-args evil-anzu anzu evil undo-tree adaptive-wrap xterm-color ws-butler winum which-key web-mode volatile-highlights vi-tilde-fringe uuidgen use-package toml-mode toc-org tagedit subatomic-theme spaceline powerline smeargle smartparens slim-mode shell-pop selectric-mode scss-mode sass-mode restart-emacs rainbow-delimiters racer pos-tip pug-mode popwin persp-mode pcre2el paradox orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-bullets open-junk-file neotree multi-term move-text magit-gitflow magit-popup magit macrostep lorem-ipsum linum-relative link-hint key-chord indent-guide hydra lv hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile pkg-info epl helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link fuzzy flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-unimpaired evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter transient git-commit with-editor evil-escape goto-chg eval-sexp-fu eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump f s doom-themes diminish define-word company-web web-completion-data dash company-statistics company column-enforce-mode clean-aindent-mode cargo markdown-mode rust-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol auto-compile packed arjen-grey-theme aggressive-indent ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup doom-city-lights-theme))
  '(pdf-view-midnight-colors '("#655370" . "#fbf8ef")))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(treemacs-root-face ((t (:inherit (variable-pitch font-lock-string-face) :weight normal :height 1.2)))))
+ '(flycheck-error ((t (:underline "#D95468"))))
+ '(flycheck-info ((t (:underline "#8BD49C"))))
+ '(flycheck-warning ((t (:underline "#EBBF83"))))
+ '(flymake-error ((t (:underline "#D95468"))))
+ '(flymake-note ((t (:underline "#8BD49C"))))
+ '(flymake-warning ((t (:underline "#D98E48"))))
+ '(flyspell-duplicate ((t (:underline "#EBBF83"))))
+ '(flyspell-incorrect ((t (:underline "#D95468"))))
+ '(treemacs-root-face ((t (:inherit (variable-pitch font-lock-string-face) :weight normal :height 1.2))))
+ '(variable-pitch ((t (:family "Sans Serif")))))
 )
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (spinner evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-snipe evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state iedit evil-exchange evil-ediff evil-args evil-anzu anzu evil undo-tree adaptive-wrap xterm-color ws-butler winum which-key web-mode volatile-highlights vi-tilde-fringe uuidgen use-package toml-mode toc-org tagedit subatomic-theme spaceline powerline smeargle smartparens slim-mode shell-pop selectric-mode scss-mode sass-mode restart-emacs rainbow-delimiters racer pos-tip pug-mode popwin persp-mode pcre2el paradox orgit org-projectile org-category-capture org-present org-pomodoro alert log4e gntp org-plus-contrib org-mime org-download org-bullets open-junk-file neotree multi-term move-text magit-gitflow magit-popup magit macrostep lorem-ipsum linum-relative link-hint key-chord indent-guide hydra lv hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation helm-themes helm-swoop helm-projectile projectile pkg-info epl helm-mode-manager helm-make helm-gitignore request helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haml-mode google-translate golden-ratio gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link fuzzy flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-unimpaired evil-search-highlight-persist highlight evil-numbers evil-nerd-commenter transient git-commit with-editor evil-escape goto-chg eval-sexp-fu eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump f s doom-themes diminish define-word company-web web-completion-data dash company-statistics company column-enforce-mode clean-aindent-mode cargo markdown-mode rust-mode bind-map bind-key auto-yasnippet yasnippet auto-highlight-symbol auto-compile packed arjen-grey-theme aggressive-indent ace-window ace-link ace-jump-helm-line helm avy helm-core async ac-ispell auto-complete popup doom-city-lights-theme))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
