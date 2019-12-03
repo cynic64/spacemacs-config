@@ -85,7 +85,7 @@ This function should only modify configuration layer settings."
    dotspacemacs-frozen-packages '()
 
    ;; A list of packages that will not be installed and loaded.
-   dotspacemacs-excluded-packages '()
+   dotspacemacs-excluded-packages '(smartparens)
 
    ;; Defines the behaviour of Spacemacs when installing packages.
    ;; Possible values are `used-only', `used-but-keep-unused' and `all'.
@@ -167,7 +167,7 @@ It should only modify the values of Spacemacs settings."
    ;; with `:variables' keyword (similar to layers). Check the editing styles
    ;; section of the documentation for details on available variables.
    ;; (default 'vim)
-   dotspacemacs-editing-style '(vim :variables
+   dotspacemacs-editing-style '(hybrid :variables
                                     vim-style-visual-feedback t)
 
    ;; If non-nil output loading progress in `*Messages*' buffer. (default nil)
@@ -501,6 +501,9 @@ before packages are loaded."
   ;; (add-hook 'evil-mc-mode-hook (lambda ()
   ;;           (rust-mode -1)))
 
+  ;; treat _ as part of words
+  (add-hook 'rust-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
+
   ;; margins
   (setq-default left-margin-width 2 right-margin-width 2)
   (set-window-buffer nil (current-buffer))
@@ -512,6 +515,14 @@ before packages are loaded."
 
   ;; shorter avy delay
   (setq avy-timeout-seconds 0.2)
+
+  ;; recompile latex on save
+  (defun latex-recompile ()
+    (when (eq major-mode 'latex-mode)
+      (save-window-excursion
+        (async-shell-command (format "pdflatex %s" buffer-file-name)))))
+
+  (add-hook 'after-save-hook #'latex-recompile)
 
   ;; (add-hook 'rust-mode-hook 'linum-mode)
   (doom-themes-treemacs-config)
